@@ -18,7 +18,6 @@ import re
 from datetime import datetime
 import zipfile
 import json
-from PyPDF2 import PdfReader,PdfWriter,PdfMerger
 import fitz
 
 #=============================================================================================#
