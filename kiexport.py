@@ -282,7 +282,11 @@ def run_kicad_ibom(output_dir=None, pcb_file_path=None, extra_args=None):
     command = [
         Kicad_python, ibom_path,
         pcb_file_path,
-        "--dest-dir", output_dir
+        "--dest-dir", output_dir,
+        "--extra-fields", "MPN,Manufacturer",
+        "--no-browser",
+        "--checkboxes", "Placed",
+        "--highlight-pin1", "all"
     ]
 
     # Add extra arguments if provided
@@ -1440,6 +1444,8 @@ def extract_info_from_pcb (pcb_file_path):
   Returns:
     dict: A dictionary containing the extracted information.
   """
+  #Ensure it is a pcb file as text variables are not stored in the schematic only in the project and pcb as  a property
+  pcb_file_path = pcb_file_path[:-3]+"pcb"
   info = {}
   
   try:
@@ -1447,12 +1453,21 @@ def extract_info_from_pcb (pcb_file_path):
       content = file.read()
     
     # Regular expressions to extract information
-    title_match = re.search (r'\(title "([^"]+)"\)', content)
-    date_match = re.search (r'\(date "([^"]+)"\)', content)
-    rev_match = re.search (r'\(rev "([^"]+)"\)', content)
-    company_match = re.search (r'\(company "([^"]+)"\)', content)
-    comment1_match = re.search (r'\(comment 1 "([^"]+)"\)', content)
-    comment2_match = re.search (r'\(comment 2 "([^"]+)"\)', content)
+    title_match = re.search(r'\(title "([^"]+)"\)', content)
+    if title_match and "${PCB Number}" in title_match.group(1):
+        title_match = re.search(r'\(property "PCB Number" "([^"]+)"\)', content)
+
+    date_match = re.search(r'\(date "([^"]+)"\)', content)
+    if date_match and "${Initial Release Date}" in date_match.group(1):
+        date_match = re.search(r'\(property "Initial Release Date" "([^"]+)"\)', content)
+
+    rev_match = re.search(r'\(rev "([^"]+)"\)', content)
+    if rev_match and "${Revision}" in rev_match.group(1):
+        rev_match = re.search(r'\(property "Revision" "([^"]+)"\)', content)
+
+    company_match = re.search(r'\(company "([^"]+)"\)', content)
+    if company_match and "${Company}" in company_match.group(1):
+        company_match = re.search(r'\(property "Company" "([^"]+)"\)', content)
     
     # Store matches in the dictionary
     if title_match:
@@ -1463,10 +1478,7 @@ def extract_info_from_pcb (pcb_file_path):
       info ['rev'] = rev_match.group (1)
     if company_match:
       info ['company'] = company_match.group (1)
-    if comment1_match:
-      info ['comment1'] = comment1_match.group (1)
-    if comment2_match:
-      info ['comment2'] = comment2_match.group (1)
+
       
   except FileNotFoundError:
     print (f"Error: The file '{pcb_file_path}' does not exist.")
