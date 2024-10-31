@@ -269,8 +269,8 @@ def run_kicad_ibom(output_dir=None, pcb_file_path=None, extra_args=None):
     for root, dirs, files in os.walk("C:\\Program Files\\KiCad\\"):
         if "python.exe" in files:
             file_found = True
-            Kicad_python = os.path.join(root, "python.exe")
-            print(color.green(f"kicad python.exe found! location: {Kicad_python}"))
+            kicad_python = os.path.join(root, "python.exe")
+            print(color.green(f"kicad python.exe found! location: {kicad_python}"))
             break
         else:
            file_found = False
@@ -280,13 +280,17 @@ def run_kicad_ibom(output_dir=None, pcb_file_path=None, extra_args=None):
 
     # Construct the iBOM command
     command = [
-        Kicad_python, ibom_path,
+        kicad_python, ibom_path,
         pcb_file_path,
         "--dest-dir", output_dir,
-        "--extra-fields", "MPN,Manufacturer",
+        "--normalize-field-case",
+        "--extra-data-file", pcb_file_path,
+        "--extra-fields", "MPN",
+        "--extra-fields", "Manufacturer",
         "--no-browser",
         "--checkboxes", "Placed",
-        "--highlight-pin1", "all"
+        "--highlight-pin1", "all",
+        "--dnp-field", "kicad_dnp",
     ]
 
     # Add extra arguments if provided
