@@ -240,17 +240,18 @@ def run_kicad_ibom(output_dir=None, pcb_file_path=None, extra_args=None):
 
     project_name = extract_project_name (file_name)
     info = extract_info_from_pcb (pcb_file_path)
-    filename_date = datetime.now().strftime ("%Y-%m-%d")
+    formatted_date = datetime.now().strftime ("%Y-%m-%d")
+    filename_date = datetime.now().strftime ("%d%m%Y")
     
     print (f"generateiBoM [INFO]: Project name is '{color.magenta (project_name)}' and revision is {color.magenta ('Rev')}{color.magenta (info ['rev'])}.")
-    iBom_filename = f"{project_name}-Rev{info ['rev']}-PCB-PDF-{filename_date}--ibom_output.html"
+    ibom_filename = f"{project_name}-Rev{info ['rev']}-{filename_date}--ibom_output"
     #---------------------------------------------------------------------------------------------#
   
     # Default output directory to the PCB file's directory if none is provided
     if output_dir is None:
         output_dir = os.path.dirname(pcb_file_path)
     else:
-       output_dir = f"{output_dir}\\Rev{info['rev']}\\{str(filename_date)}\\BoM"#os.path.join(output_dir, "\\R", info['rev'], "\\", str(filename_date), "\\BoM")
+       output_dir = f"{output_dir}\\Rev{info['rev']}\\{str(formatted_date)}\\BoM"
     
     #---------------------------------------------------------------------------------------------#
     #Find location of generate_interactive_bom.py and kicad python.exe
@@ -287,6 +288,7 @@ def run_kicad_ibom(output_dir=None, pcb_file_path=None, extra_args=None):
         "--extra-data-file", pcb_file_path,
         "--extra-fields", "MPN",
         "--extra-fields", "Manufacturer",
+        "--name-format", ibom_filename,
         "--no-browser",
         "--checkboxes", "Placed",
         "--highlight-pin1", "all",
@@ -300,7 +302,7 @@ def run_kicad_ibom(output_dir=None, pcb_file_path=None, extra_args=None):
     # Run the iBOM script with error handling
     try:
         subprocess.run(command, check=True)
-        output_file = os.path.join(output_dir, iBom_filename)
+        output_file = os.path.join(output_dir, ibom_filename)
         print(color.green(f"iBOM generated: {output_file}"))
     except subprocess.CalledProcessError as e:
         print(color.red(f"Error during iBOM generation: {e}"))
