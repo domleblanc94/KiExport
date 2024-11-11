@@ -262,6 +262,28 @@ color = _color()
 
 #=============================================================================================#
 
+def md_to_txt(md_file, txt_file):
+    """
+    Converts the changelog .MD file into a .txt file with some formating of the table.
+
+    Args:
+        md_file (str): Path to the changelog.md.
+        txt_file (str): Directory to save the output files.
+        
+    """
+    try:
+        with open(md_file, 'r', encoding='utf-8') as md_file:
+            content = md_file.read()
+        
+        with open(txt_file, 'w', encoding='utf-8') as txt_file:
+            txt_file.write(content)
+        
+        print(color.green(f"md_to_txt [OK]: File saved as {txt_file}"))
+    except Exception as e:
+        print(color.red(f"md_to_txt [ERROR]: An error occurred: {e}"))
+
+#=============================================================================================#
+
 def generateiBoM (output_dir = None, pcb_filename = None, extra_args = None):
   """
   Runs the KiCad iBOM Python script on a specified PCB file.
@@ -276,8 +298,8 @@ def generateiBoM (output_dir = None, pcb_filename = None, extra_args = None):
   """
 
   # Read the paths.
-  kicad_python_path = f'"{current_config.get ("kicad_python_path", default_config ["kicad_python_path"])}"'
-  ibom_path = f'"{current_config.get ("ibom_path", default_config ["ibom_path"])}"'
+  kicad_python_path = f"{current_config.get ("kicad_python_path", default_config ["kicad_python_path"])}"
+  ibom_path = f"{current_config.get ("ibom_path", default_config ["ibom_path"])}"
 
   # Check if the KiCad Python path exists.
   if not os.path.isfile (kicad_python_path):
@@ -308,8 +330,8 @@ def generateiBoM (output_dir = None, pcb_filename = None, extra_args = None):
   project_name = extract_project_name (file_name)
   info = extract_info_from_pcb (pcb_filename)
   
-  print (f"generateiBoM() [INFO]: Project name is '{color.magenta (project_name)}' and revision is {color.magenta ('R')}{color.magenta (info ['rev'])}.")
-  # ibom_filename = f"{project_name}-R{info ['rev']}-HTML-BoM-{filename_date}.html"
+  print (f"generateiBoM() [INFO]: Project name is '{color.magenta (project_name)}' and revision is {color.magenta ('Rev')}{color.magenta (info ['rev'])}.")
+  # ibom_filename = f"{project_name}-Rev{info ['rev']}-HTML-BoM-{filename_date}.html"
 
   #---------------------------------------------------------------------------------------------#
 
@@ -338,7 +360,7 @@ def generateiBoM (output_dir = None, pcb_filename = None, extra_args = None):
   
   # Create the output file name.
   while not_completed:
-    file_name = f"{final_directory}/{project_name}-R{info ['rev']}-BoM-HTML-{filename_date}-{seq_number}.html" # Extension needed here
+    file_name = f"{final_directory}/{project_name}-Rev{info ['rev']}-BoM-HTML-{filename_date}-{seq_number}.html" # Extension needed here
 
     if os.path.exists (file_name):
       seq_number += 1
@@ -347,7 +369,7 @@ def generateiBoM (output_dir = None, pcb_filename = None, extra_args = None):
       full_command.append ("--dest-dir")
       full_command.append (f'"{final_directory}"') # Add the output file name with double quotes around it
       full_command.append ("--name-format")
-      file_name = f"{project_name}-R{info ['rev']}-BoM-HTML-{filename_date}-{seq_number}" # No extension needed
+      file_name = f"{project_name}-Rev{info ['rev']}-BoM-HTML-{filename_date}-{seq_number}" # No extension needed
       full_command.append (f'"{file_name}"')
       break
   
@@ -493,7 +515,7 @@ def generateGerbers (output_dir, pcb_filename, to_overwrite = True):
   
   project_name = extract_project_name (file_name)
   info = extract_info_from_pcb (pcb_filename)
-  print (f"generateGerbers [INFO]: Project name is '{color.magenta (project_name)}' and revision is {color.magenta ('R')}{color.magenta (info ['rev'])}.")
+  print (f"generateGerbers [INFO]: Project name is '{color.magenta (project_name)}' and revision is {color.magenta ('Rev')}{color.magenta (info ['pcb rev'])}.")
   
   #---------------------------------------------------------------------------------------------#
   
@@ -575,7 +597,7 @@ def generateGerbers (output_dir, pcb_filename, to_overwrite = True):
   #---------------------------------------------------------------------------------------------#
   
   # Rename the files by adding Revision after the project name.
-  rename_files (final_directory, project_name, info ['rev'], [".gbr", ".gbrjob"])
+  rename_files (final_directory, project_name, info ['pcb rev'], [".gbr", ".gbrjob"])
   
   #---------------------------------------------------------------------------------------------#
   
@@ -589,7 +611,7 @@ def generateGerbers (output_dir, pcb_filename, to_overwrite = True):
   
   # Sequentially name and create the zip files.
   while not_completed:
-    zip_file_name = f"{project_name}-R{info ['rev']}-Gerber-{filename_date}-{seq_number}.zip"
+    zip_file_name = f"{project_name}-Rev{info ['pcb rev']}-Gerber-{filename_date}-{seq_number}.zip"
 
     if os.path.exists (f"{final_directory}/{zip_file_name}"):
       seq_number += 1
@@ -618,7 +640,7 @@ def generateDrills (output_dir, pcb_filename):
   
   project_name = extract_project_name (file_name)
   info = extract_info_from_pcb (pcb_filename)
-  print (f"generateDrills [INFO]: Project name is '{color.magenta (project_name)}' and revision is {color.magenta ('R')}{color.magenta (info ['rev'])}.")
+  print (f"generateDrills [INFO]: Project name is '{color.magenta (project_name)}' and revision is {color.magenta ('Rev')}{color.magenta (info ['pcb rev'])}.")
   
   #-------------------------------------------------------------------------------------------#
 
@@ -702,7 +724,7 @@ def generateDrills (output_dir, pcb_filename):
   #-------------------------------------------------------------------------------------------#
 
   # Rename the files by adding Revision after the project name.
-  rename_files (final_directory, project_name, info ['rev'], [".drl", ".ps", ".pdf"])
+  rename_files (final_directory, project_name, info ['pcb rev'], [".drl", ".ps", ".pdf"])
 
 #=============================================================================================#
 
@@ -725,7 +747,7 @@ def generatePositions (output_dir, pcb_filename, to_overwrite = True):
   
   project_name = extract_project_name (file_name)
   info = extract_info_from_pcb (pcb_filename)
-  print (f"generatePositions [INFO]: Project name is '{color.magenta (project_name)}' and revision is {color.magenta ('R')}{color.magenta (info ['rev'])}.")
+  print (f"generatePositions [INFO]: Project name is '{color.magenta (project_name)}' and revision is {color.magenta ('Rev')}{color.magenta (info ['pcb rev'])}.")
   
   #---------------------------------------------------------------------------------------------#
 
@@ -832,7 +854,7 @@ def generatePositions (output_dir, pcb_filename, to_overwrite = True):
   #---------------------------------------------------------------------------------------------#
   
   # Rename the files by adding Revision after the project name.
-  rename_files (final_directory, project_name, info ['rev'], [".csv"])
+  rename_files (final_directory, project_name, info ['pcb rev'], [".csv"])
   
   #---------------------------------------------------------------------------------------------#
   
@@ -843,7 +865,7 @@ def generatePositions (output_dir, pcb_filename, to_overwrite = True):
   
   # Sequentially name and create the zip files.
   while not_completed:
-    zip_file_name = f"{project_name}-R{info ['rev']}-Position-Files-{filename_date}-{seq_number}.zip"
+    zip_file_name = f"{project_name}-Rev{info ['pcb rev']}-Position-Files-{filename_date}-{seq_number}.zip"
 
     if os.path.exists (f"{final_directory}/{zip_file_name}"):
       seq_number += 1
@@ -871,7 +893,7 @@ def generatePcbPdf (output_dir, pcb_filename, to_overwrite = True):
   
   project_name = extract_project_name (file_name)
   info = extract_info_from_pcb (pcb_filename)
-  print (f"generatePcbPdf [INFO]: Project name is '{color.magenta (project_name)}' and revision is {color.magenta ('R')}{color.magenta (info ['rev'])}.")
+  print (f"generatePcbPdf [INFO]: Project name is '{color.magenta (project_name)}' and revision is {color.magenta ('Rev')}{color.magenta (info ['pcb rev'])}.")
   
   #---------------------------------------------------------------------------------------------#
 
@@ -927,7 +949,7 @@ def generatePcbPdf (output_dir, pcb_filename, to_overwrite = True):
             layer_name = layer_name.replace (" ", "_") # Replace spaces with underscores
 
             full_command.append ("--output")
-            full_command.append (f'"{final_directory}/{project_name}-R{info ["rev"]}-{layer_name}.pdf"') # This is the ouput file name, and not a directory name
+            full_command.append (f'"{final_directory}/{project_name}-Rev{info ["rev"]}-{layer_name}.pdf"') # This is the ouput file name, and not a directory name
 
             layer_name = arg_list ["--layers"][i] # Get a layer name from the layer list
             layer_list = [f"{layer_name}"]  # Now create a list with the first item as the layer name
@@ -987,7 +1009,7 @@ def generatePcbPdf (output_dir, pcb_filename, to_overwrite = True):
   #---------------------------------------------------------------------------------------------#
 
   # Merge all the PDFs into one file
-  merged_pdf_filename = f"{project_name}-R{info ['rev']}-PCB-PDF-All-{filename_date}-{seq_number}.pdf"
+  merged_pdf_filename = f"{project_name}-Rev{info ['pcb rev']}-PCB-PDF-All-{filename_date}-{seq_number}.pdf"
   merge_pdfs (final_directory, merged_pdf_filename)
 
   #---------------------------------------------------------------------------------------------#
@@ -1003,7 +1025,7 @@ def generatePcbPdf (output_dir, pcb_filename, to_overwrite = True):
   
   # Sequentially name and create the zip files.
   while not_completed:
-    zip_file_name = f"{project_name}-R{info ['rev']}-PCB-PDF-{filename_date}-{seq_number}.zip"
+    zip_file_name = f"{project_name}-Rev{info ['pcb rev']}-PCB-PDF-{filename_date}-{seq_number}.zip"
 
     if os.path.exists (f"{final_directory}/{zip_file_name}"):
       seq_number += 1
@@ -1036,7 +1058,7 @@ def generateSchPdf (output_dir, sch_filename, to_overwrite = True):
   project_name = extract_project_name (file_name)
   info = extract_info_from_pcb (sch_filename) # Extract basic information from the input file
 
-  print (f"generateSchPdf [INFO]: Project name is '{color.magenta (project_name)}' and revision is {color.magenta ('R')}{color.magenta (info ['rev'])}.")
+  print (f"generateSchPdf [INFO]: Project name is '{color.magenta (project_name)}' and revision is {color.magenta ('Rev')}{color.magenta (info ['sch rev'])}.")
 
   #---------------------------------------------------------------------------------------------#
 
@@ -1066,7 +1088,7 @@ def generateSchPdf (output_dir, sch_filename, to_overwrite = True):
   
   # Create the output file name.
   while not_completed:
-    file_name = f"{final_directory}/{project_name}-R{info ['rev']}-SCH-{filename_date}-{seq_number}.pdf"
+    file_name = f"{final_directory}/{project_name}-Rev{info ['sch rev']}-SCH-{filename_date}-{seq_number}.pdf"
 
     if os.path.exists (file_name):
       seq_number += 1 # Increment the sequence number and try again
@@ -1143,7 +1165,7 @@ def generate3D (output_dir, pcb_filename, type = "STEP", to_overwrite = True):
   project_name = extract_project_name (file_name)
   info = extract_info_from_pcb (pcb_filename)
   
-  print (f"generate3D [INFO]: Project name is '{color.magenta (project_name)}' and revision is {color.magenta ('R')}{color.magenta (info ['rev'])}.")
+  print (f"generate3D [INFO]: Project name is '{color.magenta (project_name)}' and revision is {color.magenta ('Rev')}{color.magenta (info ['pcb rev'])}.")
 
   #---------------------------------------------------------------------------------------------#
 
@@ -1170,7 +1192,7 @@ def generate3D (output_dir, pcb_filename, type = "STEP", to_overwrite = True):
   
   # Generate the file name.
   while not_completed:
-    file_name = f"{final_directory}/{project_name}-R{info ['rev']}-{type}-{filename_date}-{seq_number}.{extension}"
+    file_name = f"{final_directory}/{project_name}-Rev{info ['pcb rev']}-{type}-{filename_date}-{seq_number}.{extension}"
 
     if os.path.exists (file_name):
       seq_number += 1
@@ -1246,7 +1268,7 @@ def generateBom (output_dir, sch_filename, type, to_overwrite = True):
   project_name = extract_project_name (file_name)
   info = extract_info_from_pcb (sch_filename)
   
-  print (f"generateBom [INFO]: Project name is '{color.magenta (project_name)}' and revision is {color.magenta ('R')}{color.magenta (info ['rev'])}.")
+  print (f"generateBom [INFO]: Project name is '{color.magenta (project_name)}' and revision is {color.magenta ('Rev')}{color.magenta (info ['rev'])}.")
 
   #---------------------------------------------------------------------------------------------#
   
@@ -1273,7 +1295,7 @@ def generateBom (output_dir, sch_filename, type, to_overwrite = True):
   
   # Create the output file name.
   while not_completed:
-    file_name = f"{final_directory}/{project_name}-R{info ['rev']}-BoM-CSV-{filename_date}-{seq_number}.csv"
+    file_name = f"{final_directory}/{project_name}-Rev{info ['rev']}-BoM-CSV-{filename_date}-{seq_number}.csv"
 
     if os.path.exists (file_name):
       seq_number += 1
@@ -1284,7 +1306,13 @@ def generateBom (output_dir, sch_filename, type, to_overwrite = True):
       break
 
   #---------------------------------------------------------------------------------------------#
-
+  
+  #generate the changelog txt file
+  release_notes_txt = f"{output_dir}\\Rev{info ['rev']}\\release_notes.txt"
+  md_to_txt("release_notes.md",release_notes_txt)
+  
+  #---------------------------------------------------------------------------------------------#
+  
   # Get the argument list from the config file.
   arg_list = current_config.get ("data", {}).get ("bom", {}).get ("CSV")
 
@@ -1349,7 +1377,7 @@ def generateSvg (output_dir, pcb_filename, to_overwrite = True):
   project_name = extract_project_name (file_name)
   info = extract_info_from_pcb (pcb_filename) # Extract basic information from the input file
 
-  print (f"generateSvg [INFO]: Project name is '{color.magenta (project_name)}' and revision is {color.magenta ('R')}{color.magenta (info ['rev'])}.")
+  print (f"generateSvg [INFO]: Project name is '{color.magenta (project_name)}' and revision is {color.magenta ('Rev')}{color.magenta (info ['pcb rev'])}.")
 
   #---------------------------------------------------------------------------------------------#
 
@@ -1384,7 +1412,7 @@ def generateSvg (output_dir, pcb_filename, to_overwrite = True):
   
   # Create the output file name.
   while not_completed:
-    file_name = f"{final_directory}/{project_name}-R{info ['rev']}-SVG-{filename_date}-{seq_number}.svg"
+    file_name = f"{final_directory}/{project_name}-Rev{info ['pcb rev']}-SVG-{filename_date}-{seq_number}.svg"
 
     if os.path.exists (file_name):
       seq_number += 1 # Increment the sequence number and try again
@@ -1466,7 +1494,7 @@ def create_final_directory (dir_from_config, dir_from_cli, target_dir_name, rev,
   #---------------------------------------------------------------------------------------------#
 
   # Create one more directory based on the revision number.
-  rev_directory = f"{target_dir}/R{rev}"
+  rev_directory = f"{target_dir}/Rev{rev}"
 
   # Check if the revision directory exists, and create if not.
   if not os.path.exists (rev_directory):
@@ -1654,7 +1682,7 @@ def rename_files (directory, prefix, revision = "", extensions = None):
     if filename.startswith (prefix) and (not extensions or any (filename.endswith (ext) for ext in extensions)):
       # Construct the new filename with the revision tag
       base_name = filename [len (prefix):]  # Remove the prefix part
-      new_filename = f"{prefix}-R{revision}{base_name}"
+      new_filename = f"{prefix}-Rev{revision}{base_name}"
       
       # Full paths for renaming
       old_file_path = os.path.join (directory, filename)
@@ -1714,6 +1742,8 @@ def extract_info_from_pcb (pcb_file_path):
   Returns:
     dict: A dictionary containing the extracted information.
   """
+  #Ensure it is a pcb file as text variables are not stored in the schematic only in the project and pcb as  a property
+  pcb_file_path = pcb_file_path[:-3]+"pcb"
   info = {}
   
   try:
@@ -1722,9 +1752,19 @@ def extract_info_from_pcb (pcb_file_path):
     
     # Regular expressions to extract information
     title_match = re.search (r'\(title "([^"]+)"\)', content)
+    if title_match and "${PCB Number}" in title_match.group(1): #Checking if Text Variabels and replacing if they are.
+        title_match = re.search(r'\(property "PCB Number" "([^"]+)"\)', content)
     date_match = re.search (r'\(date "([^"]+)"\)', content)
+    if date_match and "${Initial Release Date}" in date_match.group(1):#Checking if Text Variabels and replacing if they are.
+        date_match = re.search(r'\(property "Initial Release Date" "([^"]+)"\)', content)
     rev_match = re.search (r'\(rev "([^"]+)"\)', content)
+    if rev_match and "${" in rev_match.group(1):#Checking if Text Variabels and replacing if they are.
+        rev_match = re.search(r'\(property "Revision" "([^"]+)"\)', content)
+    pcb_rev_match = re.search(r'\(property "PCB Revision" "([^"]+)"\)', content)
+    sch_rev_match = re.search(r'\(property "Schematic Revision" "([^"]+)"\)', content)
     company_match = re.search (r'\(company "([^"]+)"\)', content)
+    if company_match and "${Company}" in company_match.group(1):#Checking if Text Variabels and replacing if they are.
+        company_match = re.search(r'\(property "Company" "([^"]+)"\)', content)
     comment1_match = re.search (r'\(comment 1 "([^"]+)"\)', content)
     comment2_match = re.search (r'\(comment 2 "([^"]+)"\)', content)
     
@@ -1741,12 +1781,18 @@ def extract_info_from_pcb (pcb_file_path):
       info ['comment1'] = comment1_match.group (1)
     if comment2_match:
       info ['comment2'] = comment2_match.group (1)
+    if pcb_rev_match:
+      info ['pcb rev'] = pcb_rev_match.group (1)
+    if sch_rev_match:
+      info ['sch rev'] = sch_rev_match.group (1)
       
   except FileNotFoundError:
     print (f"Error: The file '{pcb_file_path}' does not exist.")
   except Exception as e:
     print (f"Error occurred: {e}")
   
+  print(color.green(info))
+
   return info
 
 #=============================================================================================#
